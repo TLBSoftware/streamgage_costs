@@ -26,7 +26,8 @@ function createMapSvg(){
 }
 //Creates graph svg that contains g for groups of svg objects
 function createGraphSvg(){
-	svg = createSvgWithSelector(d3.select("#screen"));
+	var lineGraphMap = d3.select("#screen").append("div").attr("class", "container").attr("id", "lineGraphMap");
+	svg = createSvgWithSelector(lineGraphMap);
 }
 //Helper function for svgCreation in previous 2 methods
 function createSvgWithSelector(selector){
@@ -484,6 +485,11 @@ function openStateGraphScreen(stateData){
 	//Create a back button that returns you to the country map
 	createBackButton();
 	
+}
+
+function createGraphButtons(){
+
+
 }
 
 function createBackButton(){
