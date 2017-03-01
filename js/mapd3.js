@@ -90,6 +90,7 @@ var regions = [[southeastRegion, "Southeast Region"],
 				[southwestRegion, "Southwest Region"],
 				[northwestRegion, "Northwest Region"],
 				[pacificRegion, "Pacific Region"]];
+var regionNames = [];
 				
 var currentYear,
 	currency,
@@ -448,36 +449,48 @@ function openStateGraphScreen(stateData){
 	createGraphSvg();
 	//Grab all state values
 	var stateValues;
+	var dataToGraph;
 	stateName = stateData;
-	for(var i=0;i<streamGageData.length;i++)
-	{
-		//first condition is for the 2 states that are combined
-		var tempArray = streamGageData[i].state.split('/')
-		if(tempArray.length > 1){
-			if(tempArray[0] === stateName || tempArray[1] === stateName){
+	if(stateName === "all_states"){
+		//Add each state to dataToGraph
+		for(var i=0; i<streamGageData.length;i++){
+			if(!arrayContains(regionNames, streamGageData[i].state)){
+				console.log(streamGageData[i].state);
+			}
+		}
+
+	}else{
+		dataToGraph = [curCurrent = [], cur2015 = [], cur1992 = []];
+		for(var i=0;i<streamGageData.length;i++)
+		{
+			//first condition is for the 2 states that are combined
+			var tempArray = streamGageData[i].state.split('/')
+			if(tempArray.length > 1){
+				if(tempArray[0] === stateName || tempArray[1] === stateName){
+					stateValues = streamGageData[i];
+					stateName = streamGageData[i].state;
+				}
+			}
+			if(streamGageData[i]["state"] === stateName) 
 				stateValues = streamGageData[i];
-				stateName = streamGageData[i].state;
-			}
 		}
-		if(streamGageData[i]["state"] === stateName) 
-			stateValues = streamGageData[i];
-	}
-	var dataToGraph =[curCurrent = [], cur2015 = [], cur1992 = []];
-	//n1=current, n2=2015 currency, n3=1992 currency
-	var currencyTags = ["n1_", "n2_", "n3_"]
-	counter = 0;
-	for(var year=1987;year<=2016;year++){
-		//assign values and years to 3 json objects above
-		for(var i=0;i<dataToGraph.length;i++){
-			if(stateValues[currencyTags[i]+year] > 0){
-				item = {};
-				item["year"] = parseTime(year);
-				item["value"] = +stateValues[currencyTags[i]+year];
-				dataToGraph[i].push(item);
+		//n1=current, n2=2015 currency, n3=1992 currency
+		var currencyTags = ["n1_", "n2_", "n3_"]
+		counter = 0;
+		for(var year=1987;year<=2016;year++){
+			//assign values and years to 3 json objects above
+			for(var i=0;i<dataToGraph.length;i++){
+				if(stateValues[currencyTags[i]+year] > 0){
+					item = {};
+					item["year"] = parseTime(year);
+					item["value"] = +stateValues[currencyTags[i]+year];
+					dataToGraph[i].push(item);
+				}
 			}
+			counter++
 		}
-		counter++
 	}
+	if(stateName === "all_states") stateName = "All States";
 
 	d3.select("h1").text(stateName + " Stream Gage Costs")
 	var lineGraph = new LineGraph(svg, graphWidth, graphHeight, graphMargins);
@@ -495,7 +508,6 @@ function createGraphButtons(){
 	var buttonRow = lineGraphMap.append("div").attr("class", "row");
 	var col1 = buttonRow.append("div").attr("class", "col-md-3");
 	var mySelect = col1.append("select").attr("id", "stateSelect");
-	var regionNames = [];
 	var stateNames = [];
 
 	for(var i=0;i<regions.length;i++){
