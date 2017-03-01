@@ -85,8 +85,6 @@ function LineGraph(selectorArg, width, height, margins){
         .attr("dy", "1em");
 	//append rectangle over graph to capture mouse events
 	function mousemove(){
-    	console.log("mousemove")
-    	console.log(d3.mouse(this)[0])
     	toolData = context.data[0]
 		var x0 = context.xScale.invert(d3.mouse(this)[0]),
 	      i = context.bisectDate(toolData, x0, 1),

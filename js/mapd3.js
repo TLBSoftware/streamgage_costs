@@ -84,7 +84,7 @@ var southeastRegion = ["Alabama", "Arkansas", "Florida", "Georgia", "Louisiana",
 	southwestRegion = ["Arizona", "Colorado", "Kansas", "New Mexico", "Oklahoma", "Texas", "Utah"],
 	northwestRegion = ["Idaho", "Montana", "Oregon", "Washington", "Wyoming"],
 	pacificRegion = ["California", "Hawaii", "Nevada"];
-var regions = [[southeastRegion, "Southwest Region"],
+var regions = [[southeastRegion, "Southeast Region"],
 				[northeastRegion, "Northeast Region"],
 				[midwestRegion, "Midwest Region"],
 				[southwestRegion, "Southwest Region"],
@@ -253,8 +253,8 @@ function mergeDataAndMap(){
 				
 			})
 			.on("click", function(d){
-				//Place entry to the new svg which will contain the state and graph
-				openStateGraphScreen(d);
+				//Start the graph screen with the states name
+				openStateGraphScreen(d.properties.name);
 				tooltip.style("visibility", "hidden")
 				
 			})
@@ -444,11 +444,11 @@ var parseTime = d3.timeParse("%Y");
 function openStateGraphScreen(stateData){
 	//First remove previous objects
 	d3.select("#countryMap").remove();
+	d3.select("#lineGraphMap").remove();
 	createGraphSvg();
-	
 	//Grab all state values
 	var stateValues;
-	stateName = stateData.properties.name;
+	stateName = stateData;
 	for(var i=0;i<streamGageData.length;i++)
 	{
 		//first condition is for the 2 states that are combined
@@ -478,18 +478,69 @@ function openStateGraphScreen(stateData){
 		}
 		counter++
 	}
+
 	d3.select("h1").text(stateName + " Stream Gage Costs")
 	var lineGraph = new LineGraph(svg, graphWidth, graphHeight, graphMargins);
 	lineGraph.loadData(dataToGraph);
 	lineGraph.draw();
 	//Create a back button that returns you to the country map
 	createBackButton();
+	createGraphButtons();
+	setDropList(stateName);
 	
 }
 
 function createGraphButtons(){
+	var lineGraphMap = d3.select("#lineGraphMap");
+	var buttonRow = lineGraphMap.append("div").attr("class", "row");
+	var col1 = buttonRow.append("div").attr("class", "col-md-3");
+	var mySelect = col1.append("select").attr("id", "stateSelect");
+	var regionNames = [];
+	var stateNames = [];
 
+	for(var i=0;i<regions.length;i++){
+		regionNames.push(regions[i][1])
+	}
+	for(var i=0;i<streamGageData.length;i++){
+		if(!arrayContains(regionNames, streamGageData[i]["state"])){
+			stateNames.push(streamGageData[i]["state"]);
+		}
+	}
+	stateNames.sort();
+	for(var i=-1;i<stateNames.length;i++){
+		if(i===-1){
+			mySelect.append("option").attr("value", "all_states").text("All States");
+		}else{
+			var name = stateNames[i];
+			if(name === ""){
+				continue
+			}
+			mySelect.append("option").attr("value", name).text(name)
+		}
+	}
+	mySelect.on("change", dropListChange);
+	console.log(streamGageData[0]["state"])
+	console.log(stateNames);
 
+}
+
+function setDropList(state){
+	console.log("setDropList()")
+	d3.select("#stateSelect").property("value", state);
+}
+
+function dropListChange(){
+	console.log("dropListChange");
+	var selectedState = d3.select("#stateSelect").property("value");
+	console.log(selectedState);
+	openStateGraphScreen(selectedState);
+}
+
+function arrayContains(array, string){
+	for(var i=0;i<array.length;i++){
+		if(array[i] === string){return true}
+	}
+	return false;
 }
 
 function createBackButton(){
@@ -521,7 +572,7 @@ function createBackButton(){
 }
 
 function goBackToMap(){
-	d3.select("#svgScreen").remove();
+	d3.select("#lineGraphMap").remove();
 	createMapSvg();
 	createCountryButtons();
 	d3.select("#current").property("checked", function(d){return true;});
