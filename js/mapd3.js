@@ -206,6 +206,7 @@ function mergeDataAndMap(){
 			}
 		}
 	}
+	
 		
 		//Create legend here@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 		updateHighLowLegend();
@@ -591,48 +592,3 @@ function goBackToMap(){
 	updateYear(currentYear, true);
 	d3.select("h1").text("USGS Stream Gage Costs")
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
