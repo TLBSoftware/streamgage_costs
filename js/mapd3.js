@@ -206,7 +206,7 @@ function mergeDataAndMap(){
 			}
 		}
 	}
-	
+
 		
 		//Create legend here@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 		updateHighLowLegend();
@@ -442,6 +442,7 @@ var graphMargins = {top: 20, right: 85, left: 85, bottom: 20},
 	graphHeight = height - graphMargins.top - graphMargins.bottom - 32;
 
 var parseTime = d3.timeParse("%Y");
+var stateNames = [];
 	
 function openStateGraphScreen(stateData){
 	//First remove previous objects
@@ -450,13 +451,27 @@ function openStateGraphScreen(stateData){
 	createGraphSvg();
 	//Grab all state values
 	var stateValues;
-	var dataToGraph;
+	var dataToGraph = [];
+	
 	stateName = stateData;
 	if(stateName === "all_states"){
 		//Add each state to dataToGraph
+		for(var i=0;i<stateNames.length;i++){
+			dataToGraph[i] = [];
+		}
 		for(var i=0; i<streamGageData.length;i++){
 			if(!arrayContains(regionNames, streamGageData[i].state)){
-				console.log(streamGageData[i].state);
+				var stateName = streamGageData[i].state;
+				var stateVals = streamGageData[i];
+				for(var year=1987;year<2017;year++){
+					var key = "n1_" + year;
+					if(stateVals[key] > 0){
+						item = {};
+						item["year"] = parseTime(year);
+						item["value"] = +stateVals[key];
+						dataToGraph[stateNames.indexOf(stateName)].push(item);
+					}
+				}
 			}
 		}
 
@@ -493,6 +508,7 @@ function openStateGraphScreen(stateData){
 	}
 	if(stateName === "all_states") stateName = "All States";
 
+	console.log(dataToGraph);
 	d3.select("h1").text(stateName + " Stream Gage Costs")
 	var lineGraph = new LineGraph(svg, graphWidth, graphHeight, graphMargins);
 	lineGraph.loadData(dataToGraph);
@@ -509,11 +525,13 @@ function createGraphButtons(){
 	var buttonRow = lineGraphMap.append("div").attr("class", "row");
 	var col1 = buttonRow.append("div").attr("class", "col-md-3");
 	var mySelect = col1.append("select").attr("id", "stateSelect");
-	var stateNames = [];
-
-	for(var i=0;i<regions.length;i++){
-		regionNames.push(regions[i][1])
+	
+	if(!regionNames.length){
+		for(var i=0;i<regions.length;i++){
+			regionNames.push(regions[i][1])
+		}
 	}
+	
 	for(var i=0;i<streamGageData.length;i++){
 		if(!arrayContains(regionNames, streamGageData[i]["state"])){
 			stateNames.push(streamGageData[i]["state"]);
@@ -532,20 +550,15 @@ function createGraphButtons(){
 		}
 	}
 	mySelect.on("change", dropListChange);
-	console.log(streamGageData[0]["state"])
-	console.log(stateNames);
 
 }
 
 function setDropList(state){
-	console.log("setDropList()")
 	d3.select("#stateSelect").property("value", state);
 }
 
 function dropListChange(){
-	console.log("dropListChange");
 	var selectedState = d3.select("#stateSelect").property("value");
-	console.log(selectedState);
 	openStateGraphScreen(selectedState);
 }
 
