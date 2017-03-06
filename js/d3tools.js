@@ -3,7 +3,7 @@
 //Only draws Linegraph, does not remove elements from previous screen
 function LineGraph(selectorArg, width, height, margins){
 	var context = this;
-	
+	var colorsForLines = ["red", "blue", "green"];
 	this.margins = margins;
 	this.svg = selectorArg.append("g")
 							.attr("transform",
@@ -36,15 +36,28 @@ function LineGraph(selectorArg, width, height, margins){
 	};	
 	this.draw = function(){
 		
-		for(var i=0;i<this.data.length;i++){
-			var lineClass = "line" + i;
-			this.lineSvg
-				.append("path")
-				.data([this.data[i]])
-				.attr("class", lineClass)
-				.attr("d", this.lineFunc)
+		if(this.data.length <= 3){
+			for(var i=0;i<this.data.length;i++){
+				var lineClass = "line" + i;
+				this.lineSvg
+					.append("path")
+					.data([this.data[i]])
+					.attr("class", lineClass)
+					.attr("d", this.lineFunc)
+					.attr("stroke", colorsForLines[i])
+			}
+		}else{
+			for(var i=0;i<this.data.length;i++){
+				var lineClass = "line" + i;
+				this.lineSvg
+					.append("path")
+					.data([this.data[i]])
+					.attr("class", lineClass)
+					.attr("d", this.lineFunc)
+					.attr("stroke", "black")
+					
+			}
 		}
-		
 		this.lineSvg
 			.append("g")
 			.attr("transform", "translate(0," + this.graphHeight + ")")
@@ -52,9 +65,24 @@ function LineGraph(selectorArg, width, height, margins){
 		this.lineSvg
 			.append("g")
 			.call(d3.axisLeft(this.yScale));
+
+		if(this.data.length <= 3){
+		this.svg.append("rect")
+	        .attr("width", this.graphWidth)
+	        .attr("height", this.graphHeight)
+	        .attr("class", "mouseover-rectangle")
+	        .style("stroke", "none")
+	        .style("fill", "none")
+	        .style("pointer-events", "all")
+	        .on("mouseover", function() { context.focus.style("display", null); })
+	        .on("mouseout", function() {context.focus.style("display", "none"); })
+	        .on("mousemove", mousemove);
+    	}
 	};
+	//function to analyze mouse position against data
+
 	this.bisectDate = d3.bisector(function(d) { return d.year; }).left;
-	console.log(this.bisectDate);
+
 	//append circle for tooltip
 	this.focus.append("circle")
 			.attr("class", "y")
@@ -83,7 +111,8 @@ function LineGraph(selectorArg, width, height, margins){
         .attr("class", "y4")
         .attr("dx", 8)
         .attr("dy", "1em");
-	//append rectangle over graph to capture mouse events
+
+	//event to track mouse position and move circle on line
 	function mousemove(){
     	toolData = context.data[0]
 		var x0 = context.xScale.invert(d3.mouse(this)[0]),
@@ -120,14 +149,6 @@ function LineGraph(selectorArg, width, height, margins){
 		      	.text(context.formatDate(d.year));
 	}
 
-	this.svg.append("rect")
-        .attr("width", this.graphWidth)
-        .attr("height", this.graphHeight)
-        .attr("class", "mouseover-rectangle")
-        .style("stroke", "none")
-        .style("fill", "none")
-        .style("pointer-events", "all")
-        .on("mouseover", function() { context.focus.style("display", null); })
-        .on("mouseout", function() {context.focus.style("display", "none"); })
-        .on("mousemove", mousemove);
+	//appends rect for mousemove event tracking
+	
 };
