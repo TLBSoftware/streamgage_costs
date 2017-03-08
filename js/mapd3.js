@@ -22,7 +22,7 @@ function createMapSvg(){
 						.attr("class", "container")
 						.attr("id", "countryMap")
 	createHighLowLegend();
-	addLegendForData();
+	addColorLegendForData();
 	svg = createSvgWithSelector(countryMap.append("div").attr("class", "container").attr("id", "map"));
 }
 //Creates graph svg that contains g for groups of svg objects
@@ -102,8 +102,10 @@ var streamGageData, jsonMap;
 createMapSvg();
 createCountryButtons();
 //Load csv file via d3.csv(file, function(data))
-function addLegendForData(){
-
+function addColorLegendForData(){
+	colorLegend = d3.select("#countryMap")
+			.append("ul")
+			.attr("class", "list-inline");
 }
 d3.csv("data/streamGage.csv", function(data){
 	streamGageData = data;
@@ -268,6 +270,9 @@ function mergeDataAndMap(){
 				return tooltip.style("top", (d3.event.pageY + 10) + "px").style("left", (d3.event.pageX + 10) + "px");
 				
 			})
+			
+			updateColorLegend();				
+			
 			startMapListeners();
 }
 /*@@@@@@@@@@@@@@@@@@@@@@@
@@ -294,7 +299,24 @@ function updateMapColors(){
 	
 	svg.selectAll("path").attr("fill", calculate_color);
 }
-
+function updateColorLegend(){
+	colorLegend.selectAll("li.key").remove();
+	var keys = colorLegend
+							.selectAll("li.key")
+							.data(color.range())
+							.enter()
+							.append("li")
+							.attr("class", "key")
+							.style("border-top-color", String)
+							.text(function(d){
+								console.log("inside text fn", d);
+								var r = color.invertExtent(d)
+								console.log("r", r)
+								var format = d3.format("$,.2f")
+								return format(+r[0]) + " - " + format(+r[1]);
+							})
+	
+}
 function updateYear(nYear, bool){
 	//adjust the text on the range slider
 	d3.select("#nYear-value").text(nYear);
@@ -304,6 +326,7 @@ function updateYear(nYear, bool){
 	currentYear = nYear;
 	if(bool){
 		updateMap();
+		updateColorLegend();
 	}
 }
 function updateMap(){
@@ -313,6 +336,7 @@ function updateMap(){
 	}
 	updateKey()
 	mergeDataAndMap();
+	updateColorLegend();
 	updateMapColors();
 }
 
