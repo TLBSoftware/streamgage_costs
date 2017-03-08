@@ -326,7 +326,6 @@ function updateYear(nYear, bool){
 	currentYear = nYear;
 	if(bool){
 		updateMap();
-		updateColorLegend();
 	}
 }
 function updateMap(){
@@ -336,7 +335,6 @@ function updateMap(){
 	}
 	updateKey()
 	mergeDataAndMap();
-	updateColorLegend();
 	updateMapColors();
 }
 
