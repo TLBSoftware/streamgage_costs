@@ -22,6 +22,7 @@ function createMapSvg(){
 						.attr("class", "container")
 						.attr("id", "countryMap")
 	createHighLowLegend();
+	addColorLegendForData();
 	svg = createSvgWithSelector(countryMap.append("div").attr("class", "container").attr("id", "map"));
 }
 //Creates graph svg that contains g for groups of svg objects
@@ -44,7 +45,7 @@ var tooltip = d3.select("body")
 	
 // create a quantize scale (function) to sort data values into buckets of color
 var color = d3.scaleQuantize()
-	.range(colorbrewer.Greens[9])
+	.range(colorbrewer.YlGnBu[9])
 
 // calculate a color based on the stream gage cost from the streamgage.csv
 function calculate_color(d) {
@@ -101,6 +102,11 @@ var streamGageData, jsonMap;
 createMapSvg();
 createCountryButtons();
 //Load csv file via d3.csv(file, function(data))
+function addColorLegendForData(){
+	colorLegend = d3.select("#countryMap")
+			.append("ul")
+			.attr("class", "list-inline");
+}
 d3.csv("data/streamGage.csv", function(data){
 	streamGageData = data;
 	console.log(streamGageData)
@@ -264,6 +270,9 @@ function mergeDataAndMap(){
 				return tooltip.style("top", (d3.event.pageY + 10) + "px").style("left", (d3.event.pageX + 10) + "px");
 				
 			})
+			
+			updateColorLegend();				
+			
 			startMapListeners();
 }
 /*@@@@@@@@@@@@@@@@@@@@@@@
@@ -290,7 +299,24 @@ function updateMapColors(){
 	
 	svg.selectAll("path").attr("fill", calculate_color);
 }
-
+function updateColorLegend(){
+	colorLegend.selectAll("li.key").remove();
+	var keys = colorLegend
+							.selectAll("li.key")
+							.data(color.range())
+							.enter()
+							.append("li")
+							.attr("class", "key")
+							.style("border-top-color", String)
+							.text(function(d){
+								console.log("inside text fn", d);
+								var r = color.invertExtent(d)
+								console.log("r", r)
+								var format = d3.format("$,.2f")
+								return format(+r[0]) + " - " + format(+r[1]);
+							})
+	
+}
 function updateYear(nYear, bool){
 	//adjust the text on the range slider
 	d3.select("#nYear-value").text(nYear);
@@ -474,7 +500,7 @@ function openStateGraphScreen(stateData){
 				}
 			}
 		}
-
+		d3.select("h1").text("All States")
 	}else{
 		dataToGraph = [curCurrent = [], cur2015 = [], cur1992 = []];
 		for(var i=0;i<streamGageData.length;i++)
@@ -505,11 +531,10 @@ function openStateGraphScreen(stateData){
 			}
 			counter++
 		}
+		d3.select("h1").text(stateName + " Stream Gage Costs")
 	}
 	if(stateName === "all_states") stateName = "All States";
 
-	console.log(dataToGraph);
-	d3.select("h1").text(stateName + " Stream Gage Costs")
 	var lineGraph = new LineGraph(svg, graphWidth, graphHeight, graphMargins);
 	lineGraph.loadData(dataToGraph);
 	lineGraph.draw();
@@ -526,15 +551,17 @@ function createGraphButtons(){
 	var col1 = buttonRow.append("div").attr("class", "col-md-3");
 	var mySelect = col1.append("select").attr("id", "stateSelect");
 	
-	if(!regionNames.length){
+	if(regionNames.length === 0){
 		for(var i=0;i<regions.length;i++){
 			regionNames.push(regions[i][1])
 		}
 	}
 	
-	for(var i=0;i<streamGageData.length;i++){
-		if(!arrayContains(regionNames, streamGageData[i]["state"])){
-			stateNames.push(streamGageData[i]["state"]);
+	if(stateNames.length === 0){
+		for(var i=0;i<streamGageData.length;i++){
+			if(!arrayContains(regionNames, streamGageData[i]["state"])){
+				stateNames.push(streamGageData[i]["state"]);
+			}
 		}
 	}
 	stateNames.sort();
