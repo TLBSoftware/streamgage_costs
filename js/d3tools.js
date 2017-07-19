@@ -10,9 +10,9 @@ function LineGraph(selectorArg, width, height, margins){
 							 "translate("+this.margins.left+","+this.margins.top+")");
 	this.graphWidth = width != null ? width : svg.attr("width");
 	this.graphHeight = height != null ? height : svg.attr("height");
-	this.focus = this.svg.append("g").style("display", "none").attr("class","focus");
 	this.lineSvg = this.svg
 			.append("g");
+	this.focus = this.svg.append("g").style("display", "none").attr("class","focus");
 	//Sets the scales of the graph
 	this.xScale = d3.scaleTime().range([0, this.graphWidth]);
 	this.yScale = d3.scaleLinear().range([this.graphHeight, 0]);
@@ -78,39 +78,42 @@ function LineGraph(selectorArg, width, height, margins){
 	        .on("mouseout", function() {context.focus.style("display", "none"); })
 	        .on("mousemove", mousemove);
     	}
+    	appendTooltip();
 	};
 	//function to analyze mouse position against data
 
 	this.bisectDate = d3.bisector(function(d) { return d.year; }).left;
 
 	//append circle for tooltip
-	this.focus.append("circle")
-			.attr("class", "y")
-			.style("fill", "none")
-			.style("stroke", "blue")
-			.attr("r", 4);
-	this.focus.append("text")
-        .attr("class", "y1")
-        .style("stroke", "white")
-        .style("stroke-width", "3.5px")
-        .style("opacity", 0.8)
-        .attr("dx", 8)
-        .attr("dy", "-.3em");
-    this.focus.append("text")
-        .attr("class", "y2")
-        .attr("dx", 8)
-        .attr("dy", "-.3em");
-    this.focus.append("text")
-        .attr("class", "y3")
-        .style("stroke", "white")
-        .style("stroke-width", "3.5px")
-        .style("opacity", 0.8)
-        .attr("dx", 8)
-        .attr("dy", "1em");
-    this.focus.append("text")
-        .attr("class", "y4")
-        .attr("dx", 8)
-        .attr("dy", "1em");
+	function appendTooltip(){
+		context.focus.append("circle")
+				.attr("class", "y")
+				.style("fill", "none")
+				.style("stroke", "blue")
+				.attr("r", 4);
+		context.focus.append("text")
+	        .attr("class", "y1")
+	        .style("stroke", "white")
+	        .style("stroke-width", "3.5px")
+	        .style("opacity", 0.8)
+	        .attr("dx", 8)
+	        .attr("dy", "-.3em");
+	    context.focus.append("text")
+	        .attr("class", "y2")
+	        .attr("dx", 8)
+	        .attr("dy", "-.3em");
+	    context.focus.append("text")
+	        .attr("class", "y3")
+	        .style("stroke", "white")
+	        .style("stroke-width", "3.5px")
+	        .style("opacity", 0.8)
+	        .attr("dx", 8)
+	        .attr("dy", "1em");
+	    context.focus.append("text")
+	        .attr("class", "y4")
+	        .attr("dx", 8)
+	        .attr("dy", "1em");
+    }
 
 	//event to track mouse position and move circle on line
 	function mousemove(){
